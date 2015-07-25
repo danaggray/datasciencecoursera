@@ -1,6 +1,8 @@
 # Getting and Cleaning Data #
 
-Files in this repository README.md this file
+Files in this repository
+
+README.md : this file
 
 Codebook.md : a brief description of the data set,  variables, and data transformations
 
