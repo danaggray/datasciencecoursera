@@ -1,4 +1,5 @@
 # Course Project - Gettting and cleanning data
+# Course Project - Gettting and cleanning data
 
 # run_analysis.R
 # Merges the training and the test sets to create one data set.
@@ -29,14 +30,14 @@ if (file.exists(rawdataZipFile) == FALSE) {
   unzip(rawdataZipFile)
 }
 # Time to do the work
-# read the data into data frames...with consistent lowercase names despite their convention (...why cap X and lower y?)
+# read the data into data frames...with consistent camelcase names despite their convention (...why cap X and lower y?)
 
-x_train <- read.table("./UCI HAR Dataset/train/X_train.txt", header = FALSE)
-x_test <- read.table("./UCI HAR Dataset/test/X_test.txt", header = FALSE)
-y_train <- read.table("./UCI HAR Dataset/train/y_train.txt", header = FALSE)
-y_test <- read.table("./UCI HAR Dataset/test/y_test.txt", header = FALSE)
-subject_train <- read.table("./UCI HAR Dataset/train/subject_train.txt", header = FALSE)
-subject_test <- read.table("./UCI HAR Dataset/test/subject_test.txt", header = FALSE)
+xTrain <- read.table("./UCI HAR Dataset/train/X_train.txt", header = FALSE)
+xTest <- read.table("./UCI HAR Dataset/test/X_test.txt", header = FALSE)
+yTrain <- read.table("./UCI HAR Dataset/train/y_train.txt", header = FALSE)
+yTest <- read.table("./UCI HAR Dataset/test/y_test.txt", header = FALSE)
+sTrain <- read.table("./UCI HAR Dataset/train/subject_train.txt", header = FALSE)
+sTest <- read.table("./UCI HAR Dataset/test/subject_test.txt", header = FALSE)
 
 
 # Generate activity labels 
@@ -46,24 +47,24 @@ activities<-read.table("./UCI HAR Dataset/activity_labels.txt",col.names = c("Id
 features<-read.table("./UCI HAR Dataset/features.txt",colClasses = c("character"))
 
 # Stack all the data
-traindf<-cbind(cbind(x_train, subject_train), y_train)
-testdf<-cbind(cbind(x_test, subject_test), y_test)
+traindf<-cbind(cbind(xTrain, sTrain), yTrain)
+testdf<-cbind(cbind(xTest, sTest), yTest)
 mergeddf<-rbind(traindf, testdf)
 
-collabels<-rbind(rbind(features, c(562, "Subject")), c(563, "Id"))[,2]
-names(mergeddf)<-collabels
+colLabels<-rbind(rbind(features, c(562, "Subject")), c(563, "Id"))[,2]
+names(mergeddf)<-colLabels
 
 # Only the measurements on the mean and standard deviation for each measurement.
-submergeddf <- mergeddf[,grepl("mean\\(\\)|std\\(\\)|Subject|Id", names(mergeddf))]
+subMergeddf <- mergeddf[,grepl("mean\\(\\)|std\\(\\)|Subject|Id", names(mergeddf))]
 
 # Descriptive names
-submergeddf <- join(submergeddf, activities, by = "Id", match = "first")
-submergeddf <- submergeddf[,-1]
-names(submergeddf) <- gsub("([()])","",names(submergeddf))
-names(submergeddf) <- make.names(names(submergeddf))
+subMergeddf <- join(subMergeddf, activities, by = "Id", match = "first")
+subMergeddf <- subMergeddf[,-1]
+names(subMergeddf) <- gsub("([()])","",names(subMergeddf))
+names(subMergeddf) <- make.names(names(subMergeddf))
 
-# Finish Tidy up data
-tidydf<-ddply(submergeddf, c("Subject","Activity"), numcolwise(mean))
+# Tidy data
+tidydf<-ddply(subMergeddf, c("Subject","Activity"), numcolwise(mean))
 
 # Output data
 write.table(tidydf, file = "./UCI HAR Dataset/tidydata.txt", row.name=FALSE)
