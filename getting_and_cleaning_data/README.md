@@ -1,6 +1,13 @@
-Getting and Cleaning Data
+# Getting and Cleaning Data #
 
-Files in this repository
-README.md - this file
-Codebook.md - a brief description of the data set and a complete description of the variables name, variable label, and code
-run_analysis.R - an r script to process raw data (file:) in the working directory and return a tidy data set.
+Files in this repository README.md this file
+
+Codebook.md a brief description of the data set,  variables, and data transformations
+
+
+run_analysis.R an r script to process raw data (file:) in the working directory and return a tidy data set. Per these instructions:
+1. Merges the training and the test sets to create one data set.
+2. Extracts only the measurements on the mean and standard deviation for each measurement. 
+3. Uses descriptive activity names to name the activities in the data set
+4. Appropriately labels the data set with descriptive variable names. 
+5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
