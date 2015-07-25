@@ -11,7 +11,7 @@
 # For description of data see: http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones 
 
 # required libraries: 
-
+library(plyr)
 # Code
 
 # download raw data, unzip and store locally
@@ -32,29 +32,38 @@ if (file.exists(rawdataZipFile) == FALSE) {
 # read the data into data frames...with consistent lowercase names despite their convention (...why cap X and lower y?)
 
 x_train <- read.table("./UCI HAR Dataset/train/X_train.txt", header = FALSE)
-X_test <- read.table("./UCI HAR Dataset/test/X_test.txt", header = FALSE)
+x_test <- read.table("./UCI HAR Dataset/test/X_test.txt", header = FALSE)
 y_train <- read.table("./UCI HAR Dataset/train/y_train.txt", header = FALSE)
 y_test <- read.table("./UCI HAR Dataset/test/y_test.txt", header = FALSE)
 subject_train <- read.table("./UCI HAR Dataset/train/subject_train.txt", header = FALSE)
 subject_test <- read.table("./UCI HAR Dataset/test/subject_test.txt", header = FALSE)
 
-# Read the labels into data frame
-features <- read.table("./UCI HAR Dataset/features.txt")
 
-# Per instructions we are only concerned with the mean and standard deviation for each measurement.
-extractedfeatures <- grepl("mean|std", features)
+# Generate activity labels 
+activities<-read.table("./UCI HAR Dataset/activity_labels.txt",col.names = c("Id", "Activity"))
 
+# Generate features labels
+features<-read.table("./UCI HAR Dataset/features.txt",colClasses = c("character"))
 
+# Stack all the data
+traindf<-cbind(cbind(x_train, subject_train), y_train)
+testdf<-cbind(cbind(x_test, subject_test), y_test)
+mergeddf<-rbind(traindf, testdf)
 
-# Stack the data with rbind
-xData <- rbind(x_train, X_test)
-yData <- rbind(y_train, y_test)
-subjectData <- rbind(subject_train, subject_test)
+collabels<-rbind(rbind(features, c(562, "Subject")), c(563, "Id"))[,2]
+names(mergeddf)<-collabels
 
+# Only the measurements on the mean and standard deviation for each measurement.
+submergeddf <- mergeddf[,grepl("mean\\(\\)|std\\(\\)|Subject|Id", names(mergeddf))]
 
+# Descriptive names
+submergeddf <- join(submergeddf, activities, by = "Id", match = "first")
+submergeddf <- submergeddf[,-1]
+names(submergeddf) <- gsub("([()])","",names(submergeddf))
+names(submergeddf) <- make.names(names(submergeddf))
 
+# Finish Tidy up data
+tidydf<-ddply(submergeddf, c("Subject","Activity"), numcolwise(mean))
 
-
-
-
-
+# Output data
+write.table(tidydf, file = "./UCI HAR Dataset/tidydata.txt", row.name=FALSE)
