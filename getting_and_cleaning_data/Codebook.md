@@ -80,6 +80,7 @@ fBodyBodyGyroJerkMag.mean
 fBodyBodyGyroJerkMag.std
 
 ## Data Transformations ##
+
 - Read data activities and features into data frames
 - 
 - Merge training and test sets Test and training data, subject ids and activity ids are merged into a single data set. 
