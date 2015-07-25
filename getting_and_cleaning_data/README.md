@@ -5,7 +5,7 @@ Files in this repository README.md this file
 Codebook.md : a brief description of the data set,  variables, and data transformations
 
 
-run_analysis.R : an r script to process raw data (file:) in the working directory and return a tidy data set. Per these instructions-
+run_analysis.R : an r script to process raw data (file:) in the working directory and return a tidy data set. Per these instructions -
 
 1. Merges the training and the test sets to create one data set.
 2. Extracts only the measurements on the mean and standard deviation for each measurement. 
