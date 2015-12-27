@@ -1,0 +1,144 @@
+---
+title: "PML_ExcercisePrediction"
+author: "dgg"
+date: "December 25, 2015"
+output: html_document
+---
+
+## Load and Prepare Training Data
+Load required libraries
+```{r}
+
+library(caret)
+library(rpart)
+library(rpart.plot)
+```
+
+
+```{r}
+trainData <- read.csv("C:\\Projects\\Coursera\\Practical Machine Learning\\Project\\pml-training.csv", na.strings = c("NA", ""))
+```
+
+## Load Test Data
+
+```{r, echo=FALSE}
+testData <- read.csv("C:\\Projects\\Coursera\\Practical Machine Learning\\Project\\pml-testing.csv", na.strings = c("NA", ""))
+
+```
+Preliminary investigation of the data:
+```{r}
+str(trainData)
+summary(trainData)
+
+
+```
+We can remove several variables that provide no useful data, such as the test subject ('user_name'), formatted date ('cvtd_timestamp' - this data is a factor that will be generated from the raw time stamp variables), and row number ('X')
+
+```{r}
+newIndex <- grep("X|user_name|cvtd_timestamp", names(trainData))
+trainData <- trainData[, -newIndex]
+
+```
+
+
+We will remove variables with that have virtually no variance as they would not provide any meaningful information for making a prediction model.
+```{r}
+nzData <- nearZeroVar(trainData)
+trainData <- trainData[, -nzData]
+
+```
+There are a number of variables that are relatively incomplete in that they have a large number of 'NA's. Removing these will help in making a more accurate predicting model.
+
+```{r}
+naData <- apply(trainData, 2, function(x) {
+    sum(is.na(x))
+})
+trainData <- trainData[, which(naData == 0)]
+
+```
+## Cross Validation
+For cross validation We subset the resulting data into a training set and test set (p=.75)
+
+```{r}
+subIndex <- createDataPartition(y = trainData$classe, p = 0.75, list = FALSE)
+trainSubData <- trainData[subIndex, ] 
+testSubData <- trainData[-subIndex, ]  # cross validation test set
+```
+
+Try a Decision Tree predicting model
+```{r}
+dcModel <- rpart(classe ~ ., data=trainSubData, method="class")
+
+```
+Generate Prediction
+```{r}
+dcPrediction <- predict(dcModel, testSubData, type = "class")
+
+```
+Plot Prediction
+```{r}
+rpart.plot(dcModel, main="Classification Tree", extra=102, under=TRUE, faclen=0)
+
+```
+
+Run model against our subsetted test data
+```{r}
+confusionMatrix(dcPrediction, testSubData$classe)
+
+```
+This model generates pretty good results.
+82% accuracy etc.
+
+Next we try the Random Forest approach
+
+```{r}
+library(randomForest)
+
+rfmodel <- randomForest(classe ~. , data=trainSubData, method="class")
+
+rfPrediction <- predict(rfmodel, testSubData, type = "class")
+
+confusionMatrix(rfPrediction, testSubData$classe)
+
+```
+We can see that the Random Forest model works better than the Decision Tree model as a predictor, .998 vs .820. The expected OOB error is .2%
+
+Now let us predict against our testing set
+```{r}
+# run data cleaning processes against the original test set
+
+newIndex <- grep("X|user_name|cvtd_timestamp", names(testData))
+testData <- testData[, -newIndex]
+nzData <- nearZeroVar(testData)
+testData <- testData[, -nzData]
+
+naData <- apply(testData, 2, function(x) {
+    sum(is.na(x))
+})
+testData <- testData[, which(naData == 0)]
+
+```
+
+Run the prediction against the test data
+
+```{r}
+prediction <- predict(rfmodel, testData, type="class")
+prediction
+```
+
+Now write out the files for project credit
+
+```{r}
+# Write files for submission
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(prediction)
+
+```
+
